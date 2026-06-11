@@ -219,11 +219,11 @@ strategy:
             name: 'Sonstiges'
 ```
 
-### Cards and Entities
+### Entities and Cards
 
-In the `cards` arrays, you can specify cards and entities in two ways: You can use entity selectors as well as YAML cards and even mix and match both options.
+In the `cards` arrays, you can specify entities and cards in two ways: You can use entity selectors as well as YAML cards and even mix and match both options.
 
-### 1. Entity selectors
+### Entity selectors
 
 Use strings or an array of strings with wildcards and filters to automatically match entities:
 
@@ -293,7 +293,7 @@ Keep in mind, that entities hidden by `:hide()` are technically always on the da
 
 The `hide()` pseudo function also only works in `cards` and will always generate standard Bubble Cards. For custom cards you can use [conditional cards](https://www.home-assistant.io/dashboards/conditional/), which should still get basic Bonbon styling. For more complex solutions you can use [auto-entities](https://github.com/thomasloven/lovelace-auto-entities), but because of how it's built, Bonbon styling will not be applied (yet?), so it's not recommended.
 
-### 2. Classic YAML structure
+### Classic YAML cards
 
 Use Home Assistant's built-in cards or custom cards you installed:
 
