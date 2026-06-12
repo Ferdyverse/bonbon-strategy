@@ -106,7 +106,7 @@ strategy:
 
 ### Translations and further customization
 
-Use this if you just want to translate the sections into your language of choice and have a great starting point to start customizing, as all built-in views and sections are already here and can be changed/expanded.
+Use this if you want to translate the sections into your language and have a great starting point to start customizing, as all built-in views and sections are already here and can be changed/expanded.
 
 ```yaml
 strategy:
