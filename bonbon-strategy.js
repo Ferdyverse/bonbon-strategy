@@ -155,6 +155,56 @@ export class BonbonStrategy {
           return area;
         });
 
+      // FORK: shared card builder used identically for real area nav cards AND
+      // custom "links" — both code paths call this exact same function, so
+      // there is no separately-maintained copy that can drift out of sync.
+      const createNavCard = ({ sectionConfig, icon, name, navigationPath, holdNavigationPath, subButtons, inlineButtons, rows, colorId }) => {
+        return createButtonCard(null, sectionConfig, {
+          icon,
+          show_state: false,
+          name,
+          button_action: {
+            tap_action: {
+              action: 'navigate',
+              navigation_path: navigationPath,
+            },
+            hold_action: holdNavigationPath
+              ? { action: 'navigate', navigation_path: holdNavigationPath }
+              : { action: 'none' },
+          },
+          sub_button: {
+            main: subButtons || [],
+            bottom: [
+              {
+                buttons_layout: 'inline',
+                justify_content: 'start',
+                group: inlineButtons || [],
+              },
+            ],
+            bottom_layout: 'inline',
+          },
+          rows,
+          styles: css`
+            :host {
+              --area-light-color: var(--area-${colorId}-light-color);
+              --area-medium-color: var(--area-${colorId}-medium-color);
+              --area-shade-color: var(--area-${colorId}-shade-color);
+            }
+            .bubble-main-icon-container {
+              pointer-events: none;
+            }
+          `,
+          bonbon_styles: [
+            'bubbleAreaBase',
+            sectionConfig.sub_combine_lights
+              ? sectionConfig.sub_combine_lights === 'always'
+                ? 'bubbleAreaSubButtonAlways'
+                : 'bubbleAreaSubButtonDefault'
+              : '',
+          ],
+        });
+      };
+
       _floors.forEach((floor, index, floors) => {
         const viewKey = 'bonbon_home';
         const floorAreas = _areas.filter((area) => area.floor_id == floor.floor_id);
@@ -225,47 +275,16 @@ export class BonbonStrategy {
             })
             .filter(Boolean);
 
-          const areaCard = createButtonCard(null, sectionConfig, {
+          const areaCard = createNavCard({
+            sectionConfig,
             icon: area.icon,
-            show_state: false,
             name: area.name.split(' (')[0],
-            button_action: {
-              tap_action: {
-                action: 'navigate',
-                navigation_path: `bonbon_area_${area.area_id}`,
-              },
-              hold_action: { action: 'navigate', navigation_path: `/config/areas/area/${area.area_id}` },
-            },
-            sub_button: {
-              main: subButtons,
-              bottom: [
-                {
-                  buttons_layout: 'inline',
-                  justify_content: 'start',
-                  group: inlineButtons,
-                },
-              ],
-              bottom_layout: 'inline',
-            },
+            navigationPath: `bonbon_area_${area.area_id}`,
+            holdNavigationPath: `/config/areas/area/${area.area_id}`,
+            subButtons,
+            inlineButtons,
             rows: sectionConfig.inline_buttons.length ? 1.4 : 1,
-            styles: css`
-              :host {
-                --area-light-color: var(--area-${area.area_id}-light-color);
-                --area-medium-color: var(--area-${area.area_id}-medium-color);
-                --area-shade-color: var(--area-${area.area_id}-shade-color);
-              }
-              .bubble-main-icon-container {
-                pointer-events: none;
-              }
-            `,
-            bonbon_styles: [
-              'bubbleAreaBase',
-              sectionConfig.sub_combine_lights
-                ? sectionConfig.sub_combine_lights === 'always'
-                  ? 'bubbleAreaSubButtonAlways'
-                  : 'bubbleAreaSubButtonDefault'
-                : '',
-            ],
+            colorId: area.area_id,
           });
           sectionConfig.cards.push(areaCard);
         });
@@ -375,43 +394,21 @@ export class BonbonStrategy {
               },
             };
             const cards = [
-              // FORK: custom "links" — generic navigation cards, built with the exact
-              // same createButtonCard call shape as real area nav cards, defined via
-              // sectionConfig.links: [{icon, name, color, navigation_path}]
+              // FORK: custom "links" — now built by calling the exact same
+              // createNavCard function used for real area nav cards above,
+              // not a re-implementation. sectionConfig.links:
+              // [{icon, name, color, navigation_path}]
               ...(sectionConfig.links || []).map((link) => {
                 const linkId = linkIdFor(link);
-                return createButtonCard(null, sectionConfig, {
+                return createNavCard({
+                  sectionConfig,
                   icon: link.icon,
-                  show_state: false,
                   name: link.name,
-                  button_action: {
-                    tap_action: link.navigation_path
-                      ? { action: 'navigate', navigation_path: link.navigation_path }
-                      : link.tap_action || { action: 'none' },
-                  },
-                  sub_button: {
-                    main: [],
-                    bottom: [
-                      {
-                        buttons_layout: 'inline',
-                        justify_content: 'start',
-                        group: [],
-                      },
-                    ],
-                    bottom_layout: 'inline',
-                  },
+                  navigationPath: link.navigation_path,
+                  subButtons: [],
+                  inlineButtons: [],
                   rows: 1.4,
-                  styles: css`
-                    :host {
-                      --area-light-color: var(--area-${linkId}-light-color);
-                      --area-medium-color: var(--area-${linkId}-medium-color);
-                      --area-shade-color: var(--area-${linkId}-shade-color);
-                    }
-                    .bubble-main-icon-container {
-                      pointer-events: none;
-                    }
-                  `,
-                  bonbon_styles: ['bubbleAreaBase'],
+                  colorId: linkId,
                 });
               }),
               ...resolveEntities(sectionConfig.cards, sectionConfig, viewKey).map(function (c) {
