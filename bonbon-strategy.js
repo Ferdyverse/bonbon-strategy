@@ -252,6 +252,9 @@ export class BonbonStrategy {
 
       _areas.forEach((area) => {
         const viewKey = 'bonbon_area_' + area.area_id;
+        // FORK: allow user-defined badges for this specific area's subview via
+        // strategy.options.views.bonbon_area_<area_id>.badges
+        const userAreaOverride = expandedViews[viewKey] || {};
         const viewConfig = {
           title: area.name,
           icon: area.icon,
@@ -259,6 +262,7 @@ export class BonbonStrategy {
           path: viewKey,
           max_columns: areaViewConfig.max_columns || 1,
           sections: {},
+          ...(userAreaOverride.badges ? { badges: userAreaOverride.badges } : {}),
         };
         Object.keys(areaViewConfig.sections)
           .filter((key) => {
