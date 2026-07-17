@@ -186,8 +186,8 @@ export function getColorsFromColor(color, isDark) {
     const b255 = Math.round(rgb.b * 255);
     return {
       activeColor: `hsl(${activeHsl.h}, ${activeHsl.s}%, ${activeHsl.l}%)`,
-      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.20)`,
-      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.85)`,
+      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.28)`,
+      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.95)`,
       shadeColor: `rgba(${r255}, ${g255}, ${b255}, 0.15)`,
     };
   }
@@ -290,8 +290,8 @@ export function getAreaColors(area, index, areas, isDark, styles) {
     const g255 = Math.round(hslRgb.g * 255);
     const b255 = Math.round(hslRgb.b * 255);
     return {
-      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.20)`,
-      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.85)`,
+      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.28)`,
+      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.95)`,
       shadeColor: `rgba(${r255}, ${g255}, ${b255}, 0.15)`,
     };
   }
