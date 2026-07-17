@@ -85,6 +85,31 @@ export class BonbonStrategy {
           cssVars.dark['--area-' + area.area_id + '-shade-color'] = darkAreaColors.shadeColor;
         });
 
+      // FORK: register colors for custom "links" (arbitrary navigation cards defined
+      // in section config) using the exact same --area-<id>-*-color mechanism as
+      // real areas, so they automatically get correct light/dark colors, height,
+      // and hover behavior for free via the 'bubbleAreaBase' bonbon_styles.
+      const linkIdFor = (link) =>
+        'link_' + (link.id || link.name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+
+      Object.values(config.views || {}).forEach((viewCfg) => {
+        Object.values(viewCfg?.sections || {}).forEach((sectionCfg) => {
+          (sectionCfg?.links || []).forEach((link) => {
+            if (!link.color) return;
+            const linkId = linkIdFor(link);
+            const lightColors = getColorsFromColor(link.color, false);
+            cssVars.light['--area-' + linkId + '-light-color'] = lightColors.lightColor;
+            cssVars.light['--area-' + linkId + '-medium-color'] = lightColors.mediumColor;
+            cssVars.light['--area-' + linkId + '-shade-color'] = lightColors.shadeColor;
+
+            const darkColors = getColorsFromColor(link.color, true);
+            cssVars.dark['--area-' + linkId + '-light-color'] = darkColors.lightColor;
+            cssVars.dark['--area-' + linkId + '-medium-color'] = darkColors.mediumColor;
+            cssVars.dark['--area-' + linkId + '-shade-color'] = darkColors.shadeColor;
+          });
+        });
+      });
+
       observeDarkMode((isDarkMode) => {
         const rootElement = document.documentElement;
         if (!rootElement) {
@@ -349,12 +374,43 @@ export class BonbonStrategy {
                 `,
               },
             };
-            const cards = resolveEntities(sectionConfig.cards, sectionConfig, viewKey).map(function (c) {
-              return createButtonCard(c, sectionConfig, {
-                show_graph: sectionConfig.show_graphs,
-                show_forecast: sectionConfig.show_forecast,
-              });
-            });
+            const cards = [
+              // FORK: custom "links" — generic navigation cards styled exactly
+              // like real area cards (native colors, height, hover), defined via
+              // sectionConfig.links: [{icon, name, color, navigation_path}]
+              ...(sectionConfig.links || []).map((link) => {
+                const linkId = linkIdFor(link);
+                return createButtonCard(null, sectionConfig, {
+                  icon: link.icon,
+                  show_state: false,
+                  name: link.name,
+                  button_action: {
+                    tap_action: link.navigation_path
+                      ? { action: 'navigate', navigation_path: link.navigation_path }
+                      : link.tap_action || { action: 'none' },
+                  },
+                  sub_button: { main: [], bottom: [], bottom_layout: 'inline' },
+                  rows: 1,
+                  styles: css`
+                    :host {
+                      --area-light-color: var(--area-${linkId}-light-color);
+                      --area-medium-color: var(--area-${linkId}-medium-color);
+                      --area-shade-color: var(--area-${linkId}-shade-color);
+                    }
+                    .bubble-main-icon-container {
+                      pointer-events: none;
+                    }
+                  `,
+                  bonbon_styles: ['bubbleAreaBase'],
+                });
+              }),
+              ...resolveEntities(sectionConfig.cards, sectionConfig, viewKey).map(function (c) {
+                return createButtonCard(c, sectionConfig, {
+                  show_graph: sectionConfig.show_graphs,
+                  show_forecast: sectionConfig.show_forecast,
+                });
+              }),
+            ];
 
             if (!sectionConfig.hide_separator && (cards.length || sectionConfig.show_if_empty)) {
               const separatorSubEntities = resolveEntities(sectionConfig.separator_buttons, sectionConfig, viewKey);
