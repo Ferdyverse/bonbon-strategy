@@ -132,7 +132,7 @@ function rgbToHSL(rgb) {
 }
 
 export function getColorsFromColor(color, isDark) {
-  const step = isDark ? 8 : 3;
+  const step = isDark ? 30 : 15;
 
   const rgb = hexToRGB(color);
   const lab = rgbToLAB(rgb);
@@ -187,7 +187,7 @@ export function getAreaColors(area, index, areas, isDark, styles) {
   if (area.floor_id == null) {
     area.floor_id = '_areas';
   }
-  const step = isDark ? 8 : 3;
+  const step = isDark ? 30 : 15;
 
   for (const label of area.labels) {
     const hexMatch = label.match(/^(bonbon_)?color_([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
