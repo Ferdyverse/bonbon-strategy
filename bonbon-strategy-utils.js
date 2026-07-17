@@ -175,6 +175,23 @@ export function getColorsFromColor(color, isDark) {
   const shadeHsl = rgbToHSL(shadeRgb);
   const activeHsl = rgbToHSL(activeRgb);
 
+  // FORK: dark mode uses alpha-based colors (fixed hue/rgb, varying opacity)
+  // instead of lightness-clamped HSL, because the 0-25% dark-mode lightness
+  // clamp caps how much visual contrast lightness alone can produce. Alpha
+  // variation against the dark theme background gives a much stronger,
+  // more visible light/medium/shade split.
+  if (isDark) {
+    const r255 = Math.round(rgb.r * 255);
+    const g255 = Math.round(rgb.g * 255);
+    const b255 = Math.round(rgb.b * 255);
+    return {
+      activeColor: `hsl(${activeHsl.h}, ${activeHsl.s}%, ${activeHsl.l}%)`,
+      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.28)`,
+      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.95)`,
+      shadeColor: `rgba(${r255}, ${g255}, ${b255}, 0.55)`,
+    };
+  }
+
   return {
     activeColor: `hsl(${activeHsl.h}, ${activeHsl.s}%, ${activeHsl.l}%)`,
     lightColor: `hsl(${lightHsl.h}, ${lightHsl.s}%, ${lightHsl.l}%)`,
@@ -266,6 +283,18 @@ export function getAreaColors(area, index, areas, isDark, styles) {
   const lightHsl = rgbToHSL(lightRgb);
   const mediumHsl = rgbToHSL(mediumRgb);
   const shadeHsl = rgbToHSL(shadeRgb);
+
+  // FORK: dark mode uses alpha-based colors, same reasoning as getColorsFromColor.
+  if (isDark) {
+    const r255 = Math.round(hslRgb.r * 255);
+    const g255 = Math.round(hslRgb.g * 255);
+    const b255 = Math.round(hslRgb.b * 255);
+    return {
+      lightColor: `rgba(${r255}, ${g255}, ${b255}, 0.28)`,
+      mediumColor: `rgba(${r255}, ${g255}, ${b255}, 0.95)`,
+      shadeColor: `rgba(${r255}, ${g255}, ${b255}, 0.55)`,
+    };
+  }
 
   return {
     lightColor: `hsl(${lightHsl.h}, ${lightHsl.s}%, ${lightHsl.l}%)`,
