@@ -117,6 +117,14 @@ export function createEntityApi(ctx = {}) {
   }
 
   function isHidden(c, sectionConfig = {}, viewScope = '') {
+    // FORK: automatically hide smoke detector diagnostic entities, keep only
+    // the primary "*_rauchmelder_smoke_status" entity visible.
+    if (
+      c?.entity?.entity_id &&
+      /_rauchmelder_(battery_status|end_of_life|online_status|smoke_fault_status)$/.test(c.entity.entity_id)
+    ) {
+      return true;
+    }
     const scopes = ['']
       .concat(
         [
