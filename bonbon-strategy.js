@@ -400,7 +400,7 @@ export class BonbonStrategy {
                     ],
                     bottom_layout: 'inline',
                   },
-                  rows: 1,
+                  rows: 1.4,
                   styles: css`
                     :host {
                       --area-light-color: var(--area-${linkId}-light-color);
