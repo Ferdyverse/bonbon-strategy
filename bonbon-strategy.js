@@ -197,14 +197,23 @@ export class BonbonStrategy {
               .bubble-sub-button-bottom-container.bc-auto-scroll {
                 overflow-x: hidden !important;
                 flex-wrap: nowrap !important;
+                padding-left: 52px !important;
+                box-sizing: border-box !important;
+                mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
+                -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
+              }
+              .bubble-sub-button-bottom-container.bc-auto-scroll .bubble-sub-button-group {
+                flex-wrap: nowrap !important;
               }
             ` +
             '\n' +
             // FORK: self-contained "module" — CSS above + this embedded script,
             // evaluated by Bubble Card itself at render time (same pattern
-            // used by built-in styles-driven modules). Auto-scrolls the
-            // bottom inline-buttons row back and forth when it overflows,
-            // so info like temperature/humidity/CO2 is never cut off.
+            // used by built-in styles-driven modules). Duplicates the bottom
+            // inline-buttons row once and continuously scrolls it as a
+            // seamless, endlessly looping marquee when it overflows, so info
+            // like temperature/humidity/CO2 is never cut off. Left padding
+            // + mask keep it clear of the main icon.
             '$' +
             '{(() => {\n' +
             '  const host = this?.elements?.mainContainer || card;\n' +
@@ -214,14 +223,23 @@ export class BonbonStrategy {
             "  container.classList.add('bc-auto-scroll');\n" +
             '  if (container._bcAutoScrollRunning) return;\n' +
             '  container._bcAutoScrollRunning = true;\n' +
-            '  let direction = 1;\n' +
-            '  let pauseUntil = 0;\n' +
+            "  const group = container.querySelector('.bubble-sub-button-group');\n" +
             '  const step = () => {\n' +
             '    const maxScroll = container.scrollWidth - container.clientWidth;\n' +
-            '    if (maxScroll > 2 && Date.now() > pauseUntil) {\n' +
-            '      container.scrollLeft += direction * 0.6;\n' +
-            '      if (container.scrollLeft >= maxScroll) { direction = -1; pauseUntil = Date.now() + 1500; }\n' +
-            '      if (container.scrollLeft <= 0) { direction = 1; pauseUntil = Date.now() + 1500; }\n' +
+            '    if (maxScroll > 2) {\n' +
+            "      if (group && !group._bcDuplicated) {\n" +
+            '        const clone = group.cloneNode(true);\n' +
+            "        clone.setAttribute('aria-hidden', 'true');\n" +
+            '        clone.style.marginLeft = '
+            + "'8px';\n" +
+            '        group.parentNode.appendChild(clone);\n' +
+            '        group._bcDuplicated = true;\n' +
+            '      }\n' +
+            '      const halfWidth = container.scrollWidth / 2;\n' +
+            '      container.scrollLeft += 0.5;\n' +
+            '      if (container.scrollLeft >= halfWidth) {\n' +
+            '        container.scrollLeft -= halfWidth;\n' +
+            '      }\n' +
             '    }\n' +
             '    container._bcAutoScrollTimer = requestAnimationFrame(step);\n' +
             '  };\n' +
