@@ -197,7 +197,7 @@ export class BonbonStrategy {
               .bubble-sub-button-bottom-container.bc-auto-scroll {
                 overflow-x: hidden !important;
                 flex-wrap: nowrap !important;
-                padding-left: 50px !important;
+                padding-left: 20px !important;
                 box-sizing: border-box !important;
               }
             ` +
