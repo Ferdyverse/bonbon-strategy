@@ -184,16 +184,49 @@ export class BonbonStrategy {
             bottom_layout: 'inline',
           },
           rows,
-          styles: css`
-            :host {
-              --area-light-color: var(--area-${colorId}-light-color);
-              --area-medium-color: var(--area-${colorId}-medium-color);
-              --area-shade-color: var(--area-${colorId}-shade-color);
-            }
-            .bubble-main-icon-container {
-              pointer-events: none;
-            }
-          `,
+          styles:
+            css`
+              :host {
+                --area-light-color: var(--area-${colorId}-light-color);
+                --area-medium-color: var(--area-${colorId}-medium-color);
+                --area-shade-color: var(--area-${colorId}-shade-color);
+              }
+              .bubble-main-icon-container {
+                pointer-events: none;
+              }
+              .bubble-sub-button-bottom-container.bc-auto-scroll {
+                overflow-x: hidden !important;
+                flex-wrap: nowrap !important;
+              }
+            ` +
+            '\n' +
+            // FORK: self-contained "module" — CSS above + this embedded script,
+            // evaluated by Bubble Card itself at render time (same pattern
+            // used by built-in styles-driven modules). Auto-scrolls the
+            // bottom inline-buttons row back and forth when it overflows,
+            // so info like temperature/humidity/CO2 is never cut off.
+            '$' +
+            '{(() => {\n' +
+            '  const host = this?.elements?.mainContainer || card;\n' +
+            '  if (!host) return;\n' +
+            "  const container = host.querySelector('.bubble-sub-button-bottom-container');\n" +
+            '  if (!container) return;\n' +
+            "  container.classList.add('bc-auto-scroll');\n" +
+            '  if (container._bcAutoScrollRunning) return;\n' +
+            '  container._bcAutoScrollRunning = true;\n' +
+            '  let direction = 1;\n' +
+            '  let pauseUntil = 0;\n' +
+            '  const step = () => {\n' +
+            '    const maxScroll = container.scrollWidth - container.clientWidth;\n' +
+            '    if (maxScroll > 2 && Date.now() > pauseUntil) {\n' +
+            '      container.scrollLeft += direction * 0.6;\n' +
+            '      if (container.scrollLeft >= maxScroll) { direction = -1; pauseUntil = Date.now() + 1500; }\n' +
+            '      if (container.scrollLeft <= 0) { direction = 1; pauseUntil = Date.now() + 1500; }\n' +
+            '    }\n' +
+            '    container._bcAutoScrollTimer = requestAnimationFrame(step);\n' +
+            '  };\n' +
+            '  step();\n' +
+            '})()}',
           bonbon_styles: [
             'bubbleAreaBase',
             sectionConfig.sub_combine_lights
