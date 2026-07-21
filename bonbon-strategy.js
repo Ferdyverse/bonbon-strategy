@@ -195,25 +195,32 @@ export class BonbonStrategy {
                 pointer-events: none;
               }
               .bubble-sub-button-bottom-container.bc-auto-scroll {
-                overflow-x: hidden !important;
+                overflow: hidden !important;
                 flex-wrap: nowrap !important;
                 padding-left: 52px !important;
                 box-sizing: border-box !important;
                 mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
                 -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
               }
-              .bubble-sub-button-bottom-container.bc-auto-scroll .bubble-sub-button-group {
+              .bc-auto-scroll-track {
+                display: flex !important;
                 flex-wrap: nowrap !important;
+                width: max-content !important;
+                will-change: transform;
               }
             ` +
             '\n' +
             // FORK: self-contained "module" — CSS above + this embedded script,
             // evaluated by Bubble Card itself at render time (same pattern
-            // used by built-in styles-driven modules). Duplicates the bottom
-            // inline-buttons row once and continuously scrolls it as a
-            // seamless, endlessly looping marquee when it overflows, so info
-            // like temperature/humidity/CO2 is never cut off. Left padding
-            // + mask keep it clear of the main icon.
+            // used by built-in styles-driven modules). Bubble Card (Lit)
+            // re-renders the bottom sub-button row's *children* on every
+            // state update (temperature/CO2 change constantly), wiping out
+            // any DOM we inject there — so instead of creating the "track"
+            // wrapper once, we check/recreate it on every animation frame,
+            // making it self-healing across re-renders. Duplicates the row
+            // once it detects overflow and slides it via CSS transform for a
+            // seamless, endlessly looping marquee. Left padding + mask keep
+            // it clear of the main icon.
             '$' +
             '{(() => {\n' +
             '  const host = this?.elements?.mainContainer || card;\n' +
@@ -223,22 +230,43 @@ export class BonbonStrategy {
             "  container.classList.add('bc-auto-scroll');\n" +
             '  if (container._bcAutoScrollRunning) return;\n' +
             '  container._bcAutoScrollRunning = true;\n' +
-            "  const group = container.querySelector('.bubble-sub-button-group');\n" +
+            '  let pos = 0;\n' +
+            '  let halfWidth = 0;\n' +
             '  const step = () => {\n' +
-            '    const maxScroll = container.scrollWidth - container.clientWidth;\n' +
-            '    if (maxScroll > 2) {\n' +
-            "      if (group && !group._bcDuplicated) {\n" +
-            '        const clone = group.cloneNode(true);\n' +
-            "        clone.setAttribute('aria-hidden', 'true');\n" +
-            '        clone.style.marginLeft = '
-            + "'8px';\n" +
-            '        group.parentNode.appendChild(clone);\n' +
-            '        group._bcDuplicated = true;\n' +
+            "    let track = container.querySelector(':scope > .bc-auto-scroll-track');\n" +
+            '    if (!track) {\n' +
+            '      const originalChildren = Array.from(container.children).filter(\n' +
+            "        (c) => !c.classList.contains('bc-auto-scroll-track')\n" +
+            '      );\n' +
+            '      if (originalChildren.length) {\n' +
+            "        track = document.createElement('div');\n" +
+            "        track.className = 'bc-auto-scroll-track';\n" +
+            '        originalChildren.forEach((child) => track.appendChild(child));\n' +
+            '        container.appendChild(track);\n' +
+            '        pos = 0;\n' +
+            '        halfWidth = 0;\n' +
             '      }\n' +
-            '      const halfWidth = container.scrollWidth / 2;\n' +
-            '      container.scrollLeft += 0.5;\n' +
-            '      if (container.scrollLeft >= halfWidth) {\n' +
-            '        container.scrollLeft -= halfWidth;\n' +
+            '    }\n' +
+            '    if (track) {\n' +
+            "      const duplicated = track.dataset.duplicated === '1';\n" +
+            '      const contentWidth = track.scrollWidth / (duplicated ? 2 : 1);\n' +
+            '      const overflow = contentWidth - container.clientWidth;\n' +
+            '      if (overflow > 4) {\n' +
+            '        if (!duplicated) {\n' +
+            '          const originals = Array.from(track.children);\n' +
+            '          originals.forEach((child) => {\n' +
+            '            const clone = child.cloneNode(true);\n' +
+            "            clone.setAttribute('aria-hidden', 'true');\n" +
+            '            track.appendChild(clone);\n' +
+            '          });\n' +
+            "          track.dataset.duplicated = '1';\n" +
+            '          halfWidth = track.scrollWidth / 2;\n' +
+            '        }\n' +
+            '        pos += 0.5;\n' +
+            '        if (halfWidth > 0 && pos >= halfWidth) pos -= halfWidth;\n' +
+            "        track.style.transform = 'translateX(-' + pos + 'px)';\n" +
+            '      } else {\n' +
+            "        track.style.transform = '';\n" +
             '      }\n' +
             '    }\n' +
             '    container._bcAutoScrollTimer = requestAnimationFrame(step);\n' +
