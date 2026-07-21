@@ -193,19 +193,14 @@ export class BonbonStrategy {
               }
               .bubble-main-icon-container {
                 pointer-events: none;
-                position: relative !important;
-                z-index: 3 !important;
-                background-color: var(
-                  --bubble-button-icon-background-color,
-                  var(--bubble-icon-background-color, var(--card-background-color, var(--ha-card-background)))
-                ) !important;
               }
               .bubble-sub-button-bottom-container.bc-auto-scroll {
                 overflow: hidden !important;
                 flex-wrap: nowrap !important;
                 box-sizing: border-box !important;
-                position: relative !important;
-                z-index: 1 !important;
+                padding-left: 56px !important;
+                mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 8px), transparent);
+                -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 8px), transparent);
               }
               .bc-auto-scroll-track {
                 display: flex !important;
