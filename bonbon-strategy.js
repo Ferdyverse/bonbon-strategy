@@ -197,10 +197,10 @@ export class BonbonStrategy {
               .bubble-sub-button-bottom-container.bc-auto-scroll {
                 overflow: hidden !important;
                 flex-wrap: nowrap !important;
-                padding-left: 52px !important;
+                padding-left: 64px !important;
                 box-sizing: border-box !important;
-                mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
-                -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 8px), transparent);
+                mask-image: linear-gradient(to right, transparent, transparent 60px, black 76px, black calc(100% - 8px), transparent);
+                -webkit-mask-image: linear-gradient(to right, transparent, transparent 60px, black 76px, black calc(100% - 8px), transparent);
               }
               .bc-auto-scroll-track {
                 display: flex !important;
