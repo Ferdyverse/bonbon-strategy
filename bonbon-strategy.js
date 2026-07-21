@@ -217,7 +217,8 @@ export class BonbonStrategy {
             '  let direction = 1;\n' +
             '  let pauseUntil = 0;\n' +
             '  const step = () => {\n' +
-            '    const maxScroll = container.scrollWidth - container.clientWidth;\n' +
+            '    const rawMaxScroll = container.scrollWidth - container.clientWidth;\n' +
+            '    const maxScroll = Math.max(0, Math.min(rawMaxScroll, 40));\n' +
             '    if (maxScroll > 2 && Date.now() > pauseUntil) {\n' +
             '      container.scrollLeft += direction * 0.6;\n' +
             '      if (container.scrollLeft >= maxScroll) { direction = -1; pauseUntil = Date.now() + 1500; }\n' +
