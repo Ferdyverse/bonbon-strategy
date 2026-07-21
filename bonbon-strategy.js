@@ -198,9 +198,6 @@ export class BonbonStrategy {
                 overflow: hidden !important;
                 flex-wrap: nowrap !important;
                 box-sizing: border-box !important;
-                padding-left: 56px !important;
-                mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 8px), transparent);
-                -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 8px), transparent);
               }
               .bc-auto-scroll-track {
                 display: flex !important;
